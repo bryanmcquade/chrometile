@@ -1,27 +1,5 @@
 const WINTYPES = {"windowTypes": Object.values(chrome.windows.WindowType)};
 const LAYOUTS = new Map([
-    [ 'Tall', (wIndex,wCount,mwCount,area,margin,splitPct) => {
-        let l_width = mwCount < wCount ? Math.round((area.width+margin) * splitPct) : area.width-margin;
-        let r_width = Math.round((area.width+margin) * (1-splitPct));
-        let l_height = Math.round((area.height-margin) / (mwCount));
-        let r_height = Math.round((area.height-margin) / (wCount-mwCount));
-
-        if (wIndex < mwCount) {
-            return {
-                "left":   area.left + margin,
-                "top":    area.top + margin + (l_height * wIndex),
-                "width":  l_width - 2*margin,
-                "height": l_height - margin
-            }
-        } else {
-            return {
-                "left":   area.left + l_width,
-                "top":    area.top + margin + (r_height * (wIndex-mwCount)),
-                "width":  r_width - 2*margin,
-                "height": r_height - margin
-            }
-        }
-    }],
     [ 'Wide', (wIndex,wCount,mwCount,area,margin,splitPct) => {
         let t_height = mwCount < wCount ? Math.round((area.height+margin) * splitPct) : area.height-margin;
         let b_height = Math.round((area.height+margin) * (1-splitPct));
@@ -44,14 +22,24 @@ const LAYOUTS = new Map([
             }
         }
     }],
-    [ 'Columns', (wIndex,wCount,mwCount,area,margin,splitPct) => {
-        let height = area.height-margin;
-        let width = Math.round((area.width-margin) / wCount);
-        return {
-            "top":    area.top + margin,
-            "left":   area.left + margin + (width * wIndex),
-            "width":  width - 2*margin,
-            "height": height - 2*margin
+    [ 'Rows', (wIndex,wCount,mwCount,area,margin,splitPct) => {
+        let t_height = mwCount < wCount ? Math.round((splitPct * (area.height-margin)) / mwCount) : Math.round((area.height-margin) / wCount);
+        let b_height = Math.round(((1-splitPct) * (area.height-margin)) / (wCount-mwCount));
+        let width = area.width-margin;
+        if (wIndex < mwCount) {
+            return {
+                "top":    area.top + margin + (t_height * wIndex),
+                "left":   area.left + margin,
+                "width":  width - margin,
+                "height": t_height - 2*margin
+            }
+        } else {
+            return {
+                "top":    area.top + margin + (t_height * mwCount) + (b_height * (wIndex-mwCount)),
+                "left":   area.left + margin,
+                "width":  width - margin,
+                "height": b_height - 2*margin
+            }
         }
     }]
 ])
